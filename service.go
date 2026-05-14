@@ -24,7 +24,8 @@ type Service struct {
 	Status Status
 	Pid    int
 
-	cmd *exec.Cmd
+	cmd  *exec.Cmd
+	Args []string
 
 	mu sync.RWMutex
 
@@ -33,12 +34,13 @@ type Service struct {
 	doneCh  chan struct{}
 }
 
-func InitService(name string, path string) *Service {
+func InitService(name string, path string, args []string) *Service {
 	return &Service{
 		Name:   name,
 		Path:   path + "/" + name,
 		Status: INACTIVE,
 		LogCh:  make(chan string, 100),
+		Args:   args,
 	}
 }
 
@@ -63,6 +65,7 @@ func (s *Service) StartProcess(command string, args ...string) {
 	s.logFile = f
 
 	s.cmd = exec.Command(command, args...)
+	PrintLog(s.Name, s.Pid, fmt.Sprintf("executing command: %s", s.cmd.Args))
 
 	stdout, err := s.cmd.StdoutPipe()
 	if err != nil {
@@ -84,7 +87,7 @@ func (s *Service) StartProcess(command string, args ...string) {
 	s.SetStatus(ACTIVE)
 	s.Pid = s.cmd.Process.Pid
 
-	fmt.Printf("Process %s with pid %d started\n", s.Name, s.Pid)
+	PrintLog(s.Name, s.Pid, "started")
 
 	var wg sync.WaitGroup
 	wg.Add(2)
@@ -96,8 +99,7 @@ func (s *Service) StartProcess(command string, args ...string) {
 
 	// StartProcess owns all cleanup
 	s.cleanUpService()
-
-	fmt.Printf("Process %s with pid %d exited\n", s.Name, s.Pid)
+	PrintLog(s.Name, s.Pid, "exited")
 }
 
 func (s *Service) StopProcess() {
@@ -110,20 +112,21 @@ func (s *Service) StopProcess() {
 
 	select {
 	case <-s.doneCh:
-		fmt.Printf("Process %s stopped cleanly\n", s.Name)
+		PrintLog(s.Name, s.Pid, "stopped cleanly")
 	case <-time.After(10 * time.Second):
-		fmt.Printf("Process %s didn't stop in time, force killing\n", s.Name)
+		PrintLog(s.Name, s.Pid, "sdidn't stop in time, force killing")
 		s.cmd.Process.Kill()
 		<-s.doneCh // still wait for cleanup to finish
 	}
 }
 
 func (s *Service) abortError(err error) {
-	s.LogCh <- fmt.Sprintf("[%s] error: %s", s.Name, err.Error())
+	s.LogCh <- PrintStringErr(s.Name, s.Pid, err.Error())
 	s.cleanUpService()
 }
 
 func (s *Service) cleanUpService() {
+	PrintLog(s.Name, s.Pid, "cleaning up service...")
 	s.SetStatus(INACTIVE)
 	if s.logFile != nil {
 		s.logFile.Close()
@@ -136,7 +139,7 @@ func (s *Service) streamLog(logPipe io.ReadCloser, wg *sync.WaitGroup) {
 	defer wg.Done()
 	scanner := bufio.NewScanner(logPipe)
 	for scanner.Scan() {
-		line := fmt.Sprintf("[%s] %s", s.Name, scanner.Text())
+		line := fmt.Sprintf("[%s | %d] : %s", s.Name, s.Pid, scanner.Text())
 		s.LogCh <- line
 		s.logFile.WriteString(line + "\n")
 	}

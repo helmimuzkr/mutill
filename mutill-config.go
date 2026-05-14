@@ -8,15 +8,16 @@ import (
 )
 
 type MutillConfig struct {
-	Command  string          `yaml:"string"`
-	Services []ServiceConfig `yaml:"services"`
-	Args     []string        `yaml:"args"`
+	Command      string          `yaml:"command"`
+	Services     []ServiceConfig `yaml:"services"`
+	AutoShutdown bool            `yaml:"auto_shutdown"`
 }
 
 type ServiceConfig struct {
-	Name   string `yaml:"name"`
-	Path   string `yaml:"path"`
-	IsSkip bool   `yaml:"is_skip`
+	Name string   `yaml:"name"`
+	Path string   `yaml:"path"`
+	Skip bool     `yaml:"skip"`
+	Args []string `yaml:"args"`
 }
 
 func LoadConfig(path string) (*MutillConfig, error) {

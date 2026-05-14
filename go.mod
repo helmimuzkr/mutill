@@ -1,4 +1,4 @@
-module exec
+module mutill
 
 go 1.26.2
 
