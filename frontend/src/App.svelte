@@ -39,7 +39,6 @@
       <Sidebar.Content>
         <Sidebar.Group>
           <Sidebar.GroupLabel>Menu</Sidebar.GroupLabel>
-
           <Sidebar.GroupContent>
             <Sidebar.Menu>
               {#each items as item (item.title)}
