@@ -1,7 +1,7 @@
 <script lang="ts">
-  import TekojarList from "../components/TekojarList.svelte";
-  import TekojarLogs from "../components/TekojarLogs.svelte";
-  import TekojarControls from "../components/TekojarControls.svelte";
+  import TekojarList from "../tekojar/components/TekojarList.svelte";
+  import TekojarLogs from "../tekojar/components/TekojarLogs.svelte";
+  import TekojarControls from "../tekojar/components/TekojarControls.svelte";
 
   let selected = $state("user-service");
 </script>
