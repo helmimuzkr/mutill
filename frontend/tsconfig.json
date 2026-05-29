@@ -15,6 +15,7 @@
     "allowJs": true,
     "checkJs": true,
     "isolatedModules": true,
+    "moduleResolution": "bundler", // to using bundler need the latest ts version for support subpath imports like @lucide/svelte/icons/..
     "paths": {
       "$lib": [
         "src/lib"
