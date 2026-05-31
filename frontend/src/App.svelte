@@ -10,6 +10,7 @@
   import NotFoundPage from "./component/NotFoundPage.svelte";
   import Tekojar from "./tekojar";
   import JsonataQuery from "./jsonata_query/JsonataQuery.svelte";
+  import Settings from "./settings";
 
   const pages: Page[] = [
     {
@@ -31,7 +32,7 @@
       title: "Settings",
       icon: SettingsIcon,
       section: "footer",
-      component: NotFoundPage,
+      component: Settings,
     },
   ];
 
@@ -49,7 +50,7 @@
   <Sidebar.Provider open={false}>
     <AppSidebar {pages} {currentPage} onPageChange={handlePage} />
     <Sidebar.Inset>
-      <div class="">
+      <div class="flex-1">
         {#if currentPage.component}
           <currentPage.component />
         {/if}

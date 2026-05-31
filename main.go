@@ -14,9 +14,12 @@ import (
 var assets embed.FS
 
 func main() {
-	tekojarApp := backend.NewTekojarApp()
+	tekojarApp, err := backend.NewTekojarApp()
+	if err != nil {
+		panic(err)
+	}
 
-	err := wails.Run(&options.App{
+	err = wails.Run(&options.App{
 		Title:  "Tekotools",
 		Width:  1024,
 		Height: 768,

@@ -25,18 +25,17 @@ type LogView struct {
 	Log     string `json:"log"`
 }
 
-func NewTekojarApp() *TekojarApp {
-	cfg, err := tekojar.LoadSetting("./settings.json")
+func NewTekojarApp() (*TekojarApp, error) {
+	s, err := tekojar.LoadSetting("./settings.json")
 	if err != nil {
-		tekojar.PrintErr(tekojar.SYSTEM, 0, err.Error())
-		panic(err)
+		return nil, err
 	}
 
-	tj := tekojar.New(cfg)
-
-	return &TekojarApp{
-		tekojar: tj,
+	tj, err := tekojar.NewWithSetting(s)
+	if err != nil {
+		return nil, err
 	}
+	return &TekojarApp{tekojar: tj}, nil
 }
 
 func (ta *TekojarApp) Startup(ctx context.Context) {
@@ -45,6 +44,14 @@ func (ta *TekojarApp) Startup(ctx context.Context) {
 
 func (ta *TekojarApp) Shutdown(ctx context.Context) {
 	ta.tekojar.StopAll()
+}
+
+func (ta *TekojarApp) GetSetting() *tekojar.TekojarSetting {
+	return ta.tekojar.Setting.Current()
+}
+
+func (ta *TekojarApp) SaveSetting(ts tekojar.TekojarSetting) error {
+	return ta.tekojar.Setting.Save(ts)
 }
 
 func (ta *TekojarApp) GetAll() []ServiceView {
@@ -62,20 +69,28 @@ func (ta *TekojarApp) GetAll() []ServiceView {
 	return servicesView
 }
 
-func (ta *TekojarApp) Get(name string) ServiceView {
-	s := ta.tekojar.GetService(name)
+func (ta *TekojarApp) Get(name string) (ServiceView, error) {
+	s, err := ta.tekojar.GetService(name)
+	if err != nil {
+		return ServiceView{}, err
+	}
 	return ServiceView{
 		Name:   s.Name,
 		Status: string(s.Status),
 		Logs:   []LogView{},
-	}
+	}, nil
 }
 
-func (ta *TekojarApp) Start(name string) {
+func (ta *TekojarApp) Start(name string) error {
 	ta.tekojar.Start(name)
 
+	ch, err := ta.tekojar.WatchService(name)
+	if err != nil {
+		return err
+	}
+
 	go func() {
-		for log := range ta.tekojar.WatchService(name) {
+		for log := range ch {
 			runtime.EventsEmit(ta.ctx, "service:log", map[string]interface{}{
 				"name": name,
 				"logView": LogView{
@@ -85,6 +100,8 @@ func (ta *TekojarApp) Start(name string) {
 			})
 		}
 	}()
+
+	return nil
 }
 
 func (ta *TekojarApp) containsIgnoreCase(str string, char string) bool {

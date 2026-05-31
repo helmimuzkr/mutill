@@ -24,6 +24,7 @@ type Service struct {
 	Path   string
 	Status Status
 	Pid    int
+	isSkip bool
 
 	cmd     *exec.Cmd
 	cmdName string
@@ -39,11 +40,12 @@ type Service struct {
 	eventLogCh chan string
 }
 
-func InitService(name string, path string) *Service {
+func InitService(name string, path string, skipFlag bool) *Service {
 	return &Service{
 		Name:   name,
 		Path:   path + "/" + name,
 		Status: INACTIVE,
+		isSkip: skipFlag,
 	}
 }
 

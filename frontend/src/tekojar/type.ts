@@ -1,6 +1,6 @@
-import { main } from "../../wailsjs/go/models"
+import { backend } from "../../wailsjs/go/models"
 
-export interface Service extends main.ServiceView {
+export interface Service extends backend.ServiceView {
 };
 
 

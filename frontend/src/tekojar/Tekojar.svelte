@@ -1,11 +1,11 @@
 <script lang="ts">
-  import TekojarList from "../tekojar/List.svelte";
-  import TekojarLogs from "../tekojar/Logs.svelte";
-  import TekojarControls from "../tekojar/Controls.svelte";
+  import TekojarList from '../tekojar/List.svelte';
+  import TekojarLogs from '../tekojar/Logs.svelte';
+  import TekojarControls from '../tekojar/Controls.svelte';
 
-  import { services, selectedServiceName, getAllServices } from "./store";
-  import { onMount } from "svelte";
-  import Skeleton from "$lib/components/ui/skeleton/skeleton.svelte";
+  import { services, selectedServiceName, getAllServices } from './store';
+  import { onMount } from 'svelte';
+  import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
   // initialize services on mount component
   onMount(async () => {
